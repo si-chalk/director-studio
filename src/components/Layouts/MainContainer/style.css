@@ -1,0 +1,27 @@
+.main-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.canvas-view-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* overflow: auto; */
+  /* padding: 100px 20px 20px 20px; */
+  min-height: 0;
+  /* Important for flex children to properly shrink */
+}
+
+.preview-container {
+  position: relative;
+  z-index: 5;
+  flex-shrink: 0;
+
+  /* Prevent preview panel from shrinking */
+  bottom: -30px;
+}

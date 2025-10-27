@@ -1,0 +1,925 @@
+---
+alwaysApply: false
+description: "Load this rule when working with @canva-ct/genai package on LLM integrations, chatbots, text generation, image generation (Gemini), text-to-speech (TTS), OpenRouter API, streaming responses, tool/function calling, or any features using the @canva-ct/genai package. "
+---
+## Complete @canva-ct/genai documentation
+
+# @canva-ct/genai
+
+Generative AI services with LLM streaming and OpenRouter integration, featuring Google Gemini image generation and comprehensive tool support.
+
+## 📦 Installation
+
+```bash
+npm install @canva-ct/genai
+# or
+pnpm add @canva-ct/genai
+# or
+yarn add @canva-ct/genai
+```
+
+## 🚀 Quick Start
+
+```typescript
+// Main package import
+import { setupAuth } from "@canva-ct/genai";
+
+// Submodule imports (recommended)
+import { LLMStreamService } from "@canva-ct/genai/llm";
+import { OpenRouterService } from "@canva-ct/genai/openrouter";
+
+// Initialize authentication
+setupAuth();
+
+// Use the services
+const llm = new LLMStreamService();
+const openrouter = new OpenRouterService();
+```
+
+## 🏗 Package Structure
+
+### Submodules
+
+- **`/llm`** - LLM streaming service with tool support
+- **`/openrouter`** - OpenRouter API integration with image generation
+- **`/tts`** - Text-to-Speech service using OpenAI TTS models
+
+### Configuration
+
+- **`setupAuth()`** - Initialize authentication for all GenAI services
+- **Service URLs** - Centralized endpoint configuration
+
+## 📖 API Reference
+
+### Authentication Setup
+
+#### `setupAuth(): void`
+
+Initialize GenAI services with authentication validation. Call once when your app starts.
+
+```typescript
+import { setupAuth } from "@canva-ct/genai";
+
+// Initialize on app start
+setupAuth();
+```
+
+### Configuration
+
+```typescript
+import {
+  CONFIG,
+  getServiceUrl,
+  getLLMUrl,
+  getOpenRouterUrl,
+} from "@canva-ct/genai";
+
+// Get service URLs
+const llmUrl = getLLMUrl();
+const openRouterUrl = getOpenRouterUrl();
+
+// Access configuration
+console.log("Base URL:", CONFIG.baseUrl);
+console.log("Endpoints:", CONFIG.endpoints);
+```
+
+## 🤖 LLM Module (`@canva-ct/genai/llm`)
+
+Agentic LLM streaming service powered by **LangGraph**, with support for autonomous tool execution, structured conversations, and real-time responses. The agent runs recursively, making intelligent decisions about when to call tools and when the task is complete.
+
+### Architecture
+
+The LLM service uses a **LangGraph agent** that operates autonomously:
+
+- **Recursive Execution**: The agent runs in a loop, deciding whether to call tools or respond directly
+- **Multi-Tool Support**: Can execute multiple tool calls in sequence to accomplish complex tasks
+- **Autonomous Decision Making**: The agent determines when it has enough information to complete the task
+- **Streaming Events**: All agent actions (LLM responses, tool calls, tool results) are streamed in real-time
+
+**Key Behavior:**
+- When you call `invoke()`, the agent doesn't return immediately
+- The agent may call one tool, multiple tools, or no tools at all
+- Each tool result is fed back into the agent for further reasoning
+- The agent decides when the task is complete and returns
+
+This means a single `invoke()` call can result in:
+1. LLM generates response → calls tool A → gets result → calls tool B → gets result → generates final response
+2. LLM generates response → calls tool A → gets result → generates final response
+3. LLM generates response directly (no tools needed)
+
+### LLMStreamService
+
+```typescript
+import { LLMStreamService } from "@canva-ct/genai/llm";
+import type { LLMStreamRequest, LLMStreamCallbacks } from "@canva-ct/genai/llm";
+
+const llm = new LLMStreamService();
+```
+
+#### Methods
+
+##### `invoke(request: LLMStreamRequest, callbacks: LLMStreamCallbacks): Promise<string>`
+
+Start an autonomous LLM agent session with streaming tool support.
+
+**Agent Behavior:**
+- The agent runs recursively until it determines the task is complete
+- May execute **multiple tool calls** in sequence during a single invoke
+- Streams all events (model responses, tool calls, tool results) in real-time
+- Returns only when the agent decides it has completed the task
+
+**Parameters:**
+
+```typescript
+interface LLMStreamRequest {
+  messages: LLMMessage[]; // Conversation history
+  model: string; // Model name (e.g., "gpt-4")
+  temperature?: number; // Response creativity (0-1)
+  max_tokens?: number; // Maximum response length
+  tools?: ToolDefinition[]; // Available tools/functions
+  headers?: Record<string, string>; // Additional headers
+}
+
+interface LLMStreamCallbacks {
+  onMessage: (data: any) => void; // Handle streaming chunks
+  onError?: (error: Error) => void; // Handle errors
+  onComplete?: (data: any) => void; // Handle completion
+}
+```
+
+**Usage Example:**
+
+```typescript
+import { LLMStreamService } from "@canva-ct/genai/llm";
+
+const llm = new LLMStreamService();
+
+await llm.invoke(
+  {
+    messages: [{ role: "user", content: "Show me a success notification" }],
+    model: "gpt-4",
+    temperature: 0.7,
+    max_tokens: 1000,
+    tools: [
+      {
+        name: "create_notification",
+        description: "Show user notification",
+        parameters: {
+          type: "object",
+          properties: {
+            message: {
+              type: "string",
+              description: "The notification message to display",
+            },
+            level: {
+              type: "string",
+              enum: ["info", "success", "warning", "error"],
+              description: "Notification type/level",
+            },
+          },
+          required: ["message"],
+        },
+      },
+    ],
+  },
+  {
+    onMessage: (event) => {
+      // Handle different event types
+      if (event.type === "on_chat_model_stream") {
+        // Streaming response content
+        console.log("Stream content:", event.content);
+      }
+
+      if (event.type === "on_chat_model_end") {
+        // Response generation complete
+        console.log("Stream ended");
+      }
+
+      if (event.type === "on_tool_start") {
+        // Tool execution begins
+        console.log("Tool started:", event.tool_name, event.input);
+      }
+
+      if (event.type === "on_tool_end") {
+        // Tool execution completes
+        console.log("Tool ended:", event.output, event.error);
+      }
+    },
+    onComplete: (finalMessage) => {
+      console.log("Complete:", finalMessage);
+    },
+    onError: (error) => {
+      console.error("Error:", error);
+    },
+  }
+);
+
+// LLM with image input
+await llm.invoke(
+  {
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: "Analyze this image and describe what you see",
+          },
+          {
+            type: "image_url",
+            image_url: {
+              url: `data:image/jpeg;base64,${imageBase64}`,
+            },
+          },
+        ],
+      },
+    ],
+    model: "gpt-4",
+    temperature: 0.7,
+    max_tokens: 500,
+  },
+  {
+    onMessage: (event) => {
+      if (event.type === "on_chat_model_stream") {
+        console.log("Image analysis:", event.content);
+      }
+    },
+    onComplete: (finalMessage) => {
+      console.log("Image analysis complete:", finalMessage);
+    },
+    onError: (error) => {
+      console.error("Error:", error);
+    },
+  }
+);
+```
+
+##### `stopStream(streamId?: string): void`
+
+Stop a specific stream or all active streams.
+
+```typescript
+const streamId = await llm.invoke(request, callbacks);
+
+// Stop specific stream
+llm.stopStream(streamId);
+
+// Stop all streams
+llm.stopStream();
+```
+
+##### `forceReset(): void`
+
+Force reset all active streams (emergency cleanup).
+
+```typescript
+llm.forceReset();
+```
+
+### Agent Behavior Examples
+
+#### Single Tool Execution
+
+```typescript
+// User asks a question that requires one tool
+await llm.invoke({
+  messages: [{ role: "user", content: "What's the weather in San Francisco?" }],
+  model: "gpt-4",
+  tools: [{
+    name: "get_weather",
+    description: "Get current weather for a location",
+    parameters: {
+      type: "object",
+      properties: {
+        location: { type: "string" }
+      },
+      required: ["location"]
+    }
+  }]
+}, {
+  onMessage: (event) => {
+    // Event sequence:
+    // 1. on_chat_model_stream - Agent reasoning
+    // 2. on_chat_model_end - Decides to call tool
+    // 3. on_tool_start - { tool_name: "get_weather", input: { location: "San Francisco" } }
+    // 4. on_tool_end - { output: "Sunny, 72°F" }
+    // 5. on_chat_model_stream - Agent formulates response
+    // 6. on_chat_model_end - Final response complete
+    // 7. complete - Agent finished
+  }
+});
+```
+
+#### Multiple Tool Execution (Recursive)
+
+```typescript
+// User asks a complex question requiring multiple tools
+await llm.invoke({
+  messages: [{
+    role: "user",
+    content: "What's the weather in San Francisco and should I bring an umbrella?"
+  }],
+  model: "gpt-4",
+  tools: [
+    {
+      name: "get_weather",
+      description: "Get current weather",
+      parameters: {
+        type: "object",
+        properties: {
+          location: { type: "string" }
+        },
+        required: ["location"]
+      }
+    },
+    {
+      name: "check_rain_probability",
+      description: "Check probability of rain",
+      parameters: {
+        type: "object",
+        properties: {
+          location: { type: "string" },
+          temperature: { type: "number" }
+        },
+        required: ["location", "temperature"]
+      }
+    }
+  ]
+}, {
+  onMessage: (event) => {
+    // Event sequence for multi-tool scenario:
+    // 1. on_chat_model_stream - Agent analyzes question
+    // 2. on_chat_model_end - Decides to call get_weather
+    // 3. on_tool_start - { tool_name: "get_weather", input: { location: "San Francisco" } }
+    // 4. on_tool_end - { output: "Sunny, 72°F" }
+    //
+    // Agent receives weather result and continues reasoning:
+    // 5. on_chat_model_stream - Agent processes weather data
+    // 6. on_chat_model_end - Decides to call check_rain_probability
+    // 7. on_tool_start - { tool_name: "check_rain_probability", input: { location: "SF", temperature: 72 } }
+    // 8. on_tool_end - { output: "10% chance" }
+    //
+    // Agent has enough information to respond:
+    // 9. on_chat_model_stream - Agent formulates final answer
+    // 10. on_chat_model_end - Final response: "It's sunny and 72°F with only 10% rain chance. No umbrella needed!"
+    // 11. complete - Agent finished
+  }
+});
+```
+
+**Key Takeaways:**
+- The agent may call **1 tool, multiple tools, or no tools** depending on the task
+- Each tool result is fed back into the agent for further reasoning
+- The agent decides autonomously when it has enough information
+- All events are streamed in real-time as they occur
+- `onComplete` is only called when the agent finishes the entire task
+
+### Types
+
+```typescript
+interface LLMMessage {
+  role: "system" | "user" | "assistant";
+  content: string | ContentPart[];
+}
+
+interface ToolDefinition {
+  name: string;
+  description: string;
+  parameters: {
+    type: "object";
+    properties: Record<string, any>;
+    required?: string[];
+  };
+}
+
+interface ContentPart {
+  type: "text" | "image_url";
+  text?: string;
+  image_url?: {
+    url: string;
+    detail?: "auto" | "low" | "high";
+  };
+}
+```
+
+## 🎨 OpenRouter Module (`@canva-ct/genai/openrouter`)
+
+Direct OpenRouter API integration with streaming chat, image generation, and model management.
+
+### OpenRouterService
+
+```typescript
+import { OpenRouterService } from "@canva-ct/genai/openrouter";
+import type {
+  OpenRouterRequest,
+  OpenRouterResponse,
+} from "@canva-ct/genai/openrouter";
+
+const openrouter = new OpenRouterService();
+```
+
+#### Core Methods
+
+##### `chat(request: OpenRouterRequest): Promise<OpenRouterResponse> | StreamEmitter`
+
+Unified chat method supporting both streaming and non-streaming requests.
+
+**Non-Streaming Chat:**
+
+```typescript
+const response = await openrouter.chat({
+  messages: [{ role: "user", content: "Hello, world!" }],
+  model: "openai/gpt-4o",
+  temperature: 0.7,
+  max_tokens: 1000,
+});
+
+console.log(response.choices[0].message.content);
+```
+
+**Streaming Chat:**
+
+```typescript
+const emitter = openrouter.chat({
+  messages: [{ role: "user", content: "Tell me a story" }],
+  model: "openai/gpt-4o",
+  stream: true,
+});
+
+emitter.on("chunk", (response) => {
+  console.log("Chunk:", response.choices[0].delta.content);
+});
+
+emitter.on("complete", (finalResponse) => {
+  console.log("Stream complete:", finalResponse);
+});
+
+emitter.on("error", (error) => {
+  console.error("Stream error:", error);
+});
+```
+
+##### `generateImage(options: ImageGenerationOptions): Promise<OpenRouterResponse>`
+
+Generate images using Google Gemini models.
+
+```typescript
+interface ImageGenerationOptions {
+  prompt: string;
+  model?: string; // Default: "google/gemini-2.5-flash-image-preview"
+  temperature?: number; // Response creativity
+  max_tokens?: number; // Response length
+  systemMessage?: string; // System instruction
+  imageBase64?: string; // Optional reference image for image-to-image generation
+}
+
+// Basic text-to-image generation
+const response = await openrouter.generateImage({
+  prompt: "A beautiful sunset over mountains with a lake reflection",
+  model: "google/gemini-2.5-flash-image-preview",
+  temperature: 0.7,
+  max_tokens: 100,
+  systemMessage: "Generate high-quality, detailed images",
+});
+
+console.log(response.choices[0].message.content);
+
+// Image-to-image generation using reference image
+const imageToImageResponse = await openrouter.generateImage({
+  prompt:
+    "Transform this image into a vibrant oil painting style with bold brushstrokes",
+  imageBase64: referenceImageBase64, // Your base64 encoded reference image
+  model: "google/gemini-2.5-flash-image-preview",
+  temperature: 0.8,
+  max_tokens: 200,
+  systemMessage:
+    "Focus on artistic style transformation while preserving the main composition",
+});
+
+console.log(imageToImageResponse.choices[0].message.content);
+```
+
+##### `listModels(): Promise<ListModelsResponse>`
+
+Get available OpenRouter models.
+
+```typescript
+const models = await openrouter.listModels();
+
+models.data.forEach((model) => {
+  console.log(`${model.id}: ${model.name}`);
+  console.log(`Context: ${model.context_length} tokens`);
+  console.log(`Pricing: $${model.pricing.prompt}/$${model.pricing.completion}`);
+});
+```
+
+##### `request(endpoint: string, method: string, data?: any): Promise<any>`
+
+Raw API access for any OpenRouter endpoint.
+
+```typescript
+// Custom API call
+const response = await openrouter.request("/v1/generations", "GET", {
+  limit: 10,
+  offset: 0,
+});
+
+// Get account information
+const account = await openrouter.request("/v1/auth/key", "GET");
+```
+
+### Image Analysis
+
+Analyze images with multimodal capabilities:
+
+```typescript
+// Image analysis with base64
+const analysisResponse = await openrouter.chat({
+  messages: [
+    {
+      role: "user",
+      content: [
+        { type: "text", text: "What's in this image?" },
+        {
+          type: "image_url",
+          image_url: {
+            url: `data:image/jpeg;base64,${base64ImageData}`,
+          },
+        },
+      ],
+    },
+  ],
+  model: "google/gemini-2.5-flash-image-preview",
+  modalities: ["image", "text"],
+});
+
+console.log(analysisResponse.choices[0].message.content);
+```
+
+### Types
+
+```typescript
+interface OpenRouterRequest {
+  messages: Message[];
+  model: string;
+  stream?: boolean;
+  temperature?: number;
+  max_tokens?: number;
+  modalities?: ("text" | "image")[];
+}
+
+interface Message {
+  role: "system" | "user" | "assistant";
+  content: string | ContentPart[];
+}
+
+interface ContentPart {
+  type: "text" | "image_url";
+  text?: string;
+  image_url?: {
+    url: string;
+    detail?: "auto" | "low" | "high";
+  };
+}
+
+interface OpenRouterResponse {
+  id: string;
+  object: "chat.completion" | "chat.completion.chunk";
+  created: number;
+  model: string;
+  choices: (NonStreamingChoice | StreamingChoice | NonChatChoice)[];
+  usage?: ResponseUsage;
+  system_fingerprint?: string;
+}
+
+interface StreamEmitter {
+  on(
+    event: "connection" | "chunk" | "complete" | "error" | "timeout",
+    listener: Function
+  ): this;
+  stop(): void;
+}
+```
+
+## 🔊 TTS Module (`@canva-ct/genai/tts`)
+
+Text-to-Speech service for converting text to natural-sounding audio using OpenAI's TTS models.
+
+### TTSService
+
+```typescript
+import { TTSService } from "@canva-ct/genai/tts";
+import type { TTSRequest } from "@canva-ct/genai/tts";
+
+const tts = new TTSService();
+```
+
+#### Methods
+
+##### `speak(options: TTSSpeakOptions): Promise<HTMLAudioElement>`
+
+Generate speech and return an audio element. Automatically plays by default unless `autoplay: false` is specified.
+
+**Parameters:**
+
+```typescript
+interface TTSSpeakOptions {
+  input: string; // Text to convert (max 4096 characters)
+  model: TTSModel; // "tts-1" | "tts-1-hd" | "gpt-4o-mini-tts"
+  voice: TTSVoice; // Voice selection (e.g., "coral", "sage")
+  response_format?: TTSResponseFormat; // Audio format: "mp3" | "opus" | "aac" | "flac" | "wav" | "pcm"
+  instructions?: string; // Optional instructions (gpt-4o-mini-tts only)
+  autoplay?: boolean; // Auto-play audio (default: true)
+}
+```
+
+**Usage Examples:**
+
+```typescript
+import { TTSService } from "@canva-ct/genai/tts";
+
+const tts = new TTSService();
+
+// Auto-play speech (default behavior)
+const audio = await tts.speak({
+  input: "Hello, world! This is a test of the text-to-speech functionality.",
+  model: "gpt-4o-mini-tts",
+  voice: "coral",
+  response_format: "mp3",
+  instructions: "Speak in a cheerful and energetic tone",
+  autoplay: true, // Optional, true by default
+});
+
+// Create audio element without auto-playing
+const audio = await tts.speak({
+  input: "This won't play automatically.",
+  model: "tts-1",
+  voice: "nova",
+  autoplay: false, // No auto-play
+});
+
+// Manually control playback
+audio.play();
+audio.pause();
+
+// Stop and clean up
+tts.stop();
+```
+
+##### `synthesize(options: TTSRequest): Promise<Blob>`
+
+Generate speech and return the raw audio blob for custom handling. User is responsible for managing the blob lifecycle.
+
+**Usage Example:**
+
+```typescript
+import { TTSService } from "@canva-ct/genai/tts";
+
+const tts = new TTSService();
+
+// Get audio blob for custom handling
+const audioBlob = await tts.synthesize({
+  input: "Custom audio processing example",
+  model: "tts-1-hd",
+  voice: "sage",
+  response_format: "mp3",
+});
+
+// Create custom audio element
+const url = URL.createObjectURL(audioBlob);
+const customAudio = new Audio(url);
+
+// Or download the audio
+const a = document.createElement("a");
+a.href = url;
+a.download = "speech.mp3";
+a.click();
+
+// Remember to clean up
+URL.revokeObjectURL(url);
+```
+
+##### `stop(): void`
+
+Stop current playback and clean up resources.
+
+```typescript
+tts.stop();
+```
+
+### Available Options
+
+#### Models
+
+```typescript
+type TTSModel = "tts-1" | "tts-1-hd" | "gpt-4o-mini-tts";
+
+// "tts-1" - Fast, optimized for speed
+// "tts-1-hd" - Higher quality audio
+// "gpt-4o-mini-tts" - Supports custom instructions
+```
+
+#### Voices
+
+```typescript
+type TTSVoice =
+  | "alloy"
+  | "ash"
+  | "ballad"
+  | "coral"
+  | "echo"
+  | "fable"
+  | "nova"
+  | "onyx"
+  | "sage"
+  | "shimmer";
+```
+
+#### Response Formats
+
+```typescript
+type TTSResponseFormat = "mp3" | "opus" | "aac" | "flac" | "wav" | "pcm";
+
+// "mp3" - Standard compressed format
+// "opus" - Low latency streaming
+// "aac" - Advanced Audio Coding
+// "flac" - Lossless compression
+// "wav" - Uncompressed audio
+// "pcm" - Raw audio data
+```
+
+### Types
+
+```typescript
+import {
+  TTSService,
+  TTS_MODELS,
+  TTS_VOICES,
+  TTS_FORMATS,
+} from "@canva-ct/genai/tts";
+import type {
+  TTSRequest,
+  TTSSpeakOptions,
+  TTSModel,
+  TTSVoice,
+  TTSResponseFormat,
+  TTSModelInfo,
+  TTSVoiceInfo,
+  TTSFormatInfo,
+} from "@canva-ct/genai/tts";
+
+// Use constants for UI dropdowns
+console.log("Available models:", TTS_MODELS);
+console.log("Available voices:", TTS_VOICES);
+console.log("Available formats:", TTS_FORMATS);
+```
+
+### Advanced Usage
+
+#### React Integration
+
+```typescript
+import React, { useState } from "react";
+import { TTSService } from "@canva-ct/genai/tts";
+
+function TTSComponent() {
+  const [tts] = useState(() => new TTSService());
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
+
+  // Auto-play example
+  const handleSpeak = async () => {
+    setIsPlaying(true);
+    try {
+      const audio = await tts.speak({
+        input: "Hello from React!",
+        model: "tts-1",
+        voice: "coral",
+        autoplay: true, // Auto-plays
+      });
+
+      audio.onended = () => setIsPlaying(false);
+    } catch (error) {
+      console.error("TTS error:", error);
+      setIsPlaying(false);
+    }
+  };
+
+  // Manual playback example
+  const handleCreateAudio = async () => {
+    try {
+      const audio = await tts.speak({
+        input: "Click play to hear this!",
+        model: "tts-1",
+        voice: "nova",
+        autoplay: false, // Doesn't auto-play
+      });
+
+      setAudioElement(audio);
+    } catch (error) {
+      console.error("TTS error:", error);
+    }
+  };
+
+  const handlePlay = () => {
+    audioElement?.play();
+    setIsPlaying(true);
+    audioElement!.onended = () => setIsPlaying(false);
+  };
+
+  return (
+    <div>
+      <button onClick={handleSpeak} disabled={isPlaying}>
+        {isPlaying ? "Playing..." : "Speak (Auto)"}
+      </button>
+      <button onClick={handleCreateAudio}>Create Audio</button>
+      <button onClick={handlePlay} disabled={!audioElement || isPlaying}>
+        Play
+      </button>
+    </div>
+  );
+}
+```
+
+#### Blob Handling
+
+```typescript
+// Generate and save audio file
+const blob = await tts.synthesize({
+  input: "Save this audio",
+  model: "tts-1-hd",
+  voice: "nova",
+  response_format: "mp3",
+});
+
+// Save to file (Node.js)
+const buffer = await blob.arrayBuffer();
+fs.writeFileSync("output.mp3", Buffer.from(buffer));
+
+// Or use in FormData for upload
+const formData = new FormData();
+formData.append("audio", blob, "speech.mp3");
+```
+
+## 🌐 Service Configuration
+
+Default configuration points to production services:
+
+```typescript
+import { CONFIG } from "@canva-ct/genai";
+
+console.log("Base URL:", CONFIG.baseUrl);
+console.log("LLM Endpoint:", CONFIG.endpoints.llm);
+console.log("OpenRouter Endpoint:", CONFIG.endpoints.openrouter);
+```
+
+## 🔗 Integration
+
+This package integrates with:
+
+- **@canva-ct/auth**: Automatic authentication for all API requests
+- **@canva-ct/logger**: Structured logging for requests and responses
+- **External APIs**: OpenRouter, Google Gemini, and other AI services
+
+## 🤝 Contributing
+
+This package is part of the Canva CT monorepo. See the [main README](../../README.md) for development setup and contribution guidelines.
+
+## 📝 TypeScript
+
+Full TypeScript support with comprehensive type definitions for all APIs, request/response objects, and streaming interfaces.
+
+## 🐛 Troubleshooting
+
+### Authentication Issues
+
+- Ensure `setupAuth()` is called before using services
+- Check that auth token is valid with `getAuthToken()`
+- Verify network access to auth endpoints
+
+### Streaming Problems
+
+- Check network connectivity and firewall settings
+- Verify browser supports EventSource API
+- Use `forceReset()` to clear stuck streams
+
+### Image Generation Issues
+
+- Ensure you're using a compatible model (Google Gemini)
+- Check image size limits and format requirements
+- Verify base64 encoding for image analysis
+
+### Image-to-Image Generation Issues
+
+- **Reference image quality**: Use high-quality reference images for better results
+- **Base64 encoding**: Ensure proper base64 encoding without data URL prefix for image content
+- **Model compatibility**: Use `google/gemini-2.5-flash-image-preview` for image generation tasks
+- **Content array format**: Verify multimodal content array structure with proper type annotations
+- **Prompt clarity**: Be specific about desired transformations and reference relationships
+- **Token limits**: Increase `max_tokens` for complex image generation requests (200-500 recommended)
+
+### Model Availability
+
+- Use `listModels()` to check available models
+- Some models may have usage limits or require special access
+- Check OpenRouter documentation for model-specific requirements

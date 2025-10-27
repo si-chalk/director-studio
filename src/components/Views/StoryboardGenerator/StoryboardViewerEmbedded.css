@@ -1,0 +1,36 @@
+/* Embedded viewer styles for floating panel layout */
+.storyboard-viewer-embedded {
+  width: 100%;
+  height: 100%;
+  background: #0a0a0a;
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.storyboard-viewer-header-embedded {
+  background: #1a1a1a;
+  border-bottom: 1px solid #2a2a2a;
+  padding: 20px 32px;
+  flex-shrink: 0;
+}
+
+.storyboard-viewer-content-embedded {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px;
+}
+
+/* Override specific styles for embedded mode */
+.storyboard-viewer-embedded .header-content {
+  max-width: none;
+}
+
+.storyboard-viewer-embedded .scene-section {
+  margin-bottom: 50px;
+}
+
+.storyboard-viewer-embedded .style-settings-panel {
+  display: none;
+}
+

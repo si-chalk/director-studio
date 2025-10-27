@@ -1,0 +1,466 @@
+.video-timeline {
+  /* background: #ffffff; */
+  color: #333;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+  overflow: hidden;
+  border-top: 1px solid #e0e0e0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Timeline Header */
+.timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  /* background: #f8f9fa; */
+  border-bottom: 1px solid #e0e0e0;
+  height: 60px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.header-left {
+  padding: 0 16px;
+  flex-shrink: 0;
+  width: 120px;
+}
+
+.header-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow-x: auto;
+  height: 100%;
+}
+
+.timeline-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zoom-btn {
+  background: #ffffff;
+  border: 1px solid #d0d7de;
+  color: #24292f;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px rgba(27, 31, 35, 0.04);
+}
+
+.zoom-btn:hover {
+  background: #f3f4f6;
+  border-color: #8b949e;
+}
+
+.zoom-level {
+  font-size: 12px;
+  color: #656d76;
+  min-width: 40px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.timeline-time {
+  font-size: 12px;
+  color: #656d76;
+  font-family: "SF Mono", Monaco, "Cascadia Code", monospace;
+  font-weight: 500;
+  margin-left: 16px;
+  padding-right: 16px;
+  flex-shrink: 0;
+}
+
+/* Timeline Container */
+.timeline-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  /* background: #ffffff; */
+}
+
+/* Track Labels */
+.track-labels {
+  width: 120px;
+  /* background: #f8f9fa; */
+  border-right: 1px solid #e0e0e0;
+  flex-shrink: 0;
+}
+
+.track-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  border-bottom: 1px solid #e0e0e0;
+  /* background: #f8f9fa; */
+}
+
+.track-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #24292f;
+}
+
+.track-type-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.track-type-indicator[data-type="video"] {
+  background: #0969da;
+}
+
+.track-type-indicator[data-type="audio"] {
+  background: #bf8700;
+}
+
+.track-type-indicator[data-type="text"] {
+  background: #cf222e;
+}
+
+/* Timeline Content */
+.timeline-content {
+  flex: 1;
+  position: relative;
+  overflow-x: auto;
+  overflow-y: hidden;
+  cursor: crosshair;
+  /* background: #ffffff; */
+}
+
+.timeline-content::-webkit-scrollbar {
+  height: 8px;
+}
+
+.timeline-content::-webkit-scrollbar-track {
+  /* background: #f6f8fa; */
+  border-radius: 4px;
+}
+
+.timeline-content::-webkit-scrollbar-thumb {
+  background: #d0d7de;
+  border-radius: 4px;
+}
+
+.timeline-content::-webkit-scrollbar-thumb:hover {
+  background: #8b949e;
+}
+
+/* Time Ruler in Header */
+.time-ruler-header {
+  height: 40px;
+  position: relative;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.time-marker-header {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.time-tick-header {
+  width: 1px;
+  height: 12px;
+  background: #d0d7de;
+  margin-bottom: 4px;
+}
+
+.time-label-header {
+  font-size: 10px;
+  color: #656d76;
+  font-family: "SF Mono", Monaco, "Cascadia Code", monospace;
+  white-space: nowrap;
+  margin-left: 4px;
+  font-weight: 500;
+}
+
+/* Old time ruler styles (kept for backwards compatibility) */
+.time-ruler {
+  height: 30px;
+  position: relative;
+  /* background: #f8f9fa; */
+  border-bottom: 1px solid #e0e0e0;
+  flex-shrink: 0;
+}
+
+.time-marker {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.time-tick {
+  width: 1px;
+  height: 8px;
+  background: #d0d7de;
+  margin-bottom: 4px;
+}
+
+.time-label {
+  font-size: 10px;
+  color: #656d76;
+  font-family: "SF Mono", Monaco, "Cascadia Code", monospace;
+  white-space: nowrap;
+  margin-left: 4px;
+  font-weight: 500;
+}
+
+/* Tracks Container */
+.tracks-container {
+  flex: 1;
+  position: relative;
+}
+
+.track {
+  position: relative;
+  border-bottom: 1px solid #e0e0e0;
+  /* background: #ffffff; */
+}
+
+.track-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: transparent;
+  /* background-image:
+        linear-gradient(90deg, #f6f8fa 1px, transparent 1px); */
+  background-size: 20px 100%;
+}
+
+/* Timeline Clips */
+.timeline-clip {
+  position: absolute;
+  top: 6px;
+  height: calc(100% - 12px);
+  border-radius: 8px;
+  cursor: move;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(27, 31, 35, 0.15);
+  box-shadow:
+    0 1px 3px rgba(27, 31, 35, 0.12),
+    0 1px 2px rgba(27, 31, 35, 0.24);
+  overflow: hidden;
+  min-width: 60px;
+  /* background: #ffffff; */
+}
+
+.timeline-clip:hover {
+  border-color: rgba(27, 31, 35, 0.3);
+  box-shadow:
+    0 4px 8px rgba(27, 31, 35, 0.15),
+    0 2px 4px rgba(27, 31, 35, 0.12);
+  transform: translateY(-1px);
+}
+
+.timeline-clip.selected {
+  border-color: #0969da;
+  box-shadow:
+    0 0 0 2px rgba(9, 105, 218, 0.3),
+    0 4px 8px rgba(27, 31, 35, 0.15);
+}
+
+.clip-content {
+  padding: 8px 12px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0969da 0%, #0550ae 100%);
+}
+
+.clip-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  font-weight: 500;
+  color: black;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Resize Handles */
+.resize-handle {
+  position: absolute;
+  top: 0;
+  width: 6px;
+  height: 100%;
+  cursor: ew-resize;
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.timeline-clip:hover .resize-handle {
+  opacity: 1;
+}
+
+.resize-handle.left {
+  left: 0;
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+.resize-handle.right {
+  right: 0;
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.resize-handle:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Playhead */
+.playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.playhead-line {
+  width: 2px;
+  height: 100%;
+  background: #ff4444;
+  box-shadow: 0 0 4px rgba(255, 68, 68, 0.6);
+}
+
+.playhead-handle {
+  position: absolute;
+  top: -5px;
+  left: -6px;
+  width: 14px;
+  height: 14px;
+  background: #ff4444;
+  border: 2px solid white;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Animations */
+@keyframes clip-select {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.02);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.timeline-clip.selected {
+  animation: clip-select 0.2s ease;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .track-labels {
+    width: 80px;
+  }
+
+  .track-name {
+    font-size: 10px;
+  }
+
+  .timeline-header {
+    padding: 6px 12px;
+  }
+
+  .zoom-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+  }
+}
+
+/* Drag States */
+.timeline-clip.dragging {
+  opacity: 0.8;
+  z-index: 100;
+  cursor: grabbing !important;
+}
+
+.timeline-clip.resizing {
+  opacity: 0.8;
+}
+
+/* Grid Snapping Visual */
+.timeline-content.snapping::before {
+  content: "";
+  position: absolute;
+  top: 30px;
+  bottom: 0;
+  width: 1px;
+  background: #ff4444;
+  opacity: 0.5;
+  z-index: 50;
+  pointer-events: none;
+}
+
+/* Track Hover States */
+.track:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Clip Type Specific Styles */
+.timeline-clip[data-type="video"] {
+  background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+}
+
+.timeline-clip[data-type="audio"] {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.timeline-clip[data-type="text"] {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+/* Loading States */
+.timeline-clip.loading {
+  background: linear-gradient(90deg, #444 25%, #555 50%, #444 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 2s infinite;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}

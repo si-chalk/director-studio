@@ -1,0 +1,21 @@
+.toolbar {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  pointer-events: auto;
+}
+
+.video-toolbar {
+  height: 42px;
+  padding-right: 10px;
+  padding-left: 10px;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 24px;
+  background-color: rgba(0, 0, 0, 0.1);
+  margin: 0 4px;
+}
