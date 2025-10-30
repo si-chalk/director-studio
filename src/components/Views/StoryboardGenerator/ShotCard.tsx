@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { calculateShotWidth } from './timelineConstants';
 import './ShotCard.css';
 
 interface ShotCardProps {
@@ -9,7 +11,7 @@ interface ShotCardProps {
   visualPrompt: string;
   characters?: string[];
   objects?: string[];
-  durationS?: number;
+  durationMs?: number;
   thumbnailUrl?: string | null;
   isGeneratingThumbnail?: boolean;
   onGenerateThumbnail?: () => void;
@@ -24,31 +26,143 @@ const ShotCard: React.FC<ShotCardProps> = ({
   visualPrompt,
   characters = [],
   objects = [],
-  durationS,
+  durationMs = 3000,
   thumbnailUrl = null,
   isGeneratingThumbnail = false,
   onGenerateThumbnail,
   error
 }) => {
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isFlyoutOpen, setIsFlyoutOpen] = useState(false);
+  const [flyoutPosition, setFlyoutPosition] = useState({ top: 0, left: 0 });
+  const cardRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  
+  // Calculate card width using shared constants
+  const cardWidth = calculateShotWidth(durationMs);
+  const durationSeconds = durationMs / 1000;
 
-  const handleGenerateVideo = () => {
-    console.log('Generate video for shot:', shotNumber, {
-      visualPrompt,
-      characters,
-      objects,
-      durationS
-    });
-    // TODO: Implement video generation
-  };
+  // Update flyout position when it opens
+  useEffect(() => {
+    if (isFlyoutOpen && buttonRef.current) {
+      const buttonRect = buttonRef.current.getBoundingClientRect();
+      const flyoutWidth = 380;
+      const flyoutHeight = 500;
+      
+      // Default position: below and to the right of the button
+      let top = buttonRect.bottom + 8;
+      let left = buttonRect.right - flyoutWidth;
+      
+      // Adjust if flyout would go off the right edge
+      if (left < 20) {
+        left = 20;
+      }
+      
+      // Adjust if flyout would go off the bottom
+      if (top + flyoutHeight > window.innerHeight - 20) {
+        top = Math.max(20, window.innerHeight - flyoutHeight - 20);
+      }
+      
+      // Adjust if flyout would go off the left edge (show to the right instead)
+      if (left + flyoutWidth > window.innerWidth - 20) {
+        left = Math.max(20, window.innerWidth - flyoutWidth - 20);
+      }
+      
+      setFlyoutPosition({ top, left });
+    }
+  }, [isFlyoutOpen]);
 
   return (
-    <div className="shot-card">
-      <div className="shot-card-header">
-        <span className="shot-number">Shot {shotNumber}</span>
-      </div>
+    <div className="shot-card" style={{ width: `${cardWidth}px` }} ref={cardRef}>
+      <button 
+        ref={buttonRef}
+        className="edit-button"
+        onClick={() => setIsFlyoutOpen(!isFlyoutOpen)}
+        title="Edit shot"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M11.333 2.00004C11.5081 1.82494 11.716 1.686 11.9447 1.59129C12.1735 1.49657 12.419 1.44775 12.6663 1.44775C12.9137 1.44775 13.1592 1.49657 13.3879 1.59129C13.6167 1.686 13.8246 1.82494 13.9997 2.00004C14.1748 2.17513 14.3137 2.383 14.4084 2.61178C14.5031 2.84055 14.552 3.08605 14.552 3.33337C14.552 3.58069 14.5031 3.82619 14.4084 4.05497C14.3137 4.28374 14.1748 4.49161 13.9997 4.66671L5.33301 13.3334L1.99967 14L2.66634 10.6667L11.333 2.00004Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+
+      {/* Flyout Portal */}
+      {isFlyoutOpen && createPortal(
+        <>
+          <div className="flyout-overlay" onClick={() => setIsFlyoutOpen(false)} />
+          <div 
+            className="flyout flyout-popover"
+            style={{
+              top: `${flyoutPosition.top}px`,
+              left: `${flyoutPosition.left}px`
+            }}
+          >
+            <div className="flyout-header">
+              <h3>Edit Shot {shotNumber}</h3>
+              <button className="flyout-close" onClick={() => setIsFlyoutOpen(false)}>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </button>
+            </div>
+            <div className="flyout-content">
+              <div className="flyout-field">
+                <label>Shot Type</label>
+                <select className="flyout-select" value={shotType}>
+                  <option>Close Up</option>
+                  <option>Extreme Close Up</option>
+                  <option>Medium Shot</option>
+                  <option>Medium Close Up</option>
+                  <option>Wide Shot</option>
+                  <option>Extreme Wide</option>
+                  <option>Insert</option>
+                  <option>Overhead</option>
+                  <option>POV</option>
+                  <option>Tracking</option>
+                  <option>Push In</option>
+                  <option>Pull Out</option>
+                  <option>Tilt</option>
+                  <option>Pan</option>
+                  <option>Static</option>
+                </select>
+              </div>
+              
+              <div className="flyout-field">
+                <label>Duration</label>
+                <div className="flyout-info">{durationSeconds.toFixed(1)}s ({durationMs}ms)</div>
+              </div>
+
+              {characters && characters.length > 0 && (
+                <div className="flyout-field">
+                  <label>Characters</label>
+                  <div className="flyout-info">{characters.join(', ')}</div>
+                </div>
+              )}
+
+              {objects && objects.length > 0 && (
+                <div className="flyout-field">
+                  <label>Objects</label>
+                  <div className="flyout-info">{objects.join(', ')}</div>
+                </div>
+              )}
+
+              <div className="flyout-field">
+                <label>Description</label>
+                <textarea 
+                  className="flyout-textarea" 
+                  value={description}
+                  rows={6}
+                  placeholder="Shot description..."
+                />
+              </div>
+            </div>
+          </div>
+        </>,
+        document.body
+      )}
 
       <div className="shot-thumbnail" onClick={onGenerateThumbnail}>
+        {/* Shot Number Badge */}
+        <div className="shot-number-badge">{shotNumber}</div>
+        
         {thumbnailUrl ? (
           <img 
             src={thumbnailUrl} 
@@ -92,48 +206,6 @@ const ShotCard: React.FC<ShotCardProps> = ({
           </div>
         )}
       </div>
-
-      <button 
-        className="generate-video-btn"
-        onClick={handleGenerateVideo}
-      >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M8 2C4.68629 2 2 4.68629 2 8C2 11.3137 4.68629 14 8 14C11.3137 14 14 11.3137 14 8C14 4.68629 11.3137 2 8 2ZM8 3.5C10.4853 3.5 12.5 5.51472 12.5 8C12.5 10.4853 10.4853 12.5 8 12.5C5.51472 12.5 3.5 10.4853 3.5 8C3.5 5.51472 5.51472 3.5 8 3.5Z" fill="currentColor"/>
-          <path d="M6.5 5.5L10.5 8L6.5 10.5V5.5Z" fill="currentColor"/>
-        </svg>
-        Generate video
-      </button>
-
-      <div className="shot-description">
-        {description}
-      </div>
-
-      <div className="shot-footer">
-        <select className="shot-type-select" value={shotType} disabled>
-          <option>{shotType}</option>
-        </select>
-        
-        {durationS && (
-          <span className="shot-duration">{durationS}s</span>
-        )}
-      </div>
-
-      {(characters.length > 0 || objects.length > 0) && (
-        <div className="shot-metadata">
-          {characters.length > 0 && (
-            <div className="metadata-tag">
-              <span className="metadata-label">Characters:</span>
-              <span className="metadata-value">{characters.join(', ')}</span>
-            </div>
-          )}
-          {objects.length > 0 && (
-            <div className="metadata-tag">
-              <span className="metadata-label">Objects:</span>
-              <span className="metadata-value">{objects.join(', ')}</span>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 };

@@ -7,8 +7,8 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
+  color-scheme: light;
+  color: rgba(13, 18, 22, 0.86);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -45,7 +45,7 @@ html {
 }
 
 body {
-  background-color: #f0f0f0;
+  background-color: #FFFFFF;
   display: flex;
   justify-content: center;
   font-family:
@@ -65,10 +65,11 @@ body {
   min-height: 100vh;
   overflow-y: auto;
   position: relative;
+  color: rgba(13, 18, 22, 0.86);
 }
 
 .background-container {
-  background-color: #f0f0f0;
+  background-color: #FFFFFF;
   display: flex;
   justify-content: center;
   width: 100%;
@@ -235,7 +236,7 @@ body {
 }
 
 .recent-design-title {
-  color: #0e1318;
+  color: #0E1318;
   font-size: 12px;
   font-style: normal;
   font-weight: 500;
@@ -248,7 +249,7 @@ body {
   line-height: 16px;
   letter-spacing: 0px;
   vertical-align: middle;
-  color: rgba(17, 23, 29, 0.6);
+  color: rgba(17, 23, 29, 0.60);
 }
 
 /* Hide scrollbar for webkit browsers */

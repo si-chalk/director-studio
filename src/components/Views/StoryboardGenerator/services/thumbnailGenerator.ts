@@ -46,7 +46,7 @@ interface Shot {
   environment_id?: string;
   characters?: string[];
   objects?: string[];
-  duration_s?: number;
+  duration_ms?: number;
 }
 
 interface Scene {
