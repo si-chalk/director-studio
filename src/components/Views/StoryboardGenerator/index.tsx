@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { LLMStreamService } from '@canva-ct/genai/llm';
 import type { LLMStreamRequest } from '@canva-ct/genai/llm';
 import StoryboardViewer from './StoryboardViewer';
+import { SAMPLE_STORYBOARD } from './sampleData';
 import './style.css';
 
 const llmService = new LLMStreamService();
@@ -121,7 +122,7 @@ const STORYBOARD_SCHEMA = {
             "type": "array",
             "items": {
               "type": "object",
-              "required": ["shot_id", "shot_number", "shot_type", "description", "visual_prompt", "thumbnail_prompt"],
+              "required": ["shot_id", "shot_number", "shot_type", "description", "visual_prompt", "thumbnail_prompt", "duration_ms"],
               "properties": {
                 "shot_id": { "type": "string", "pattern": "^[a-z0-9_-]+$" },
                 "shot_number": { "type": "integer", "minimum": 1 },
@@ -148,7 +149,11 @@ const STORYBOARD_SCHEMA = {
                 "description": { "type": "string" },
                 "visual_prompt": { "type": "string" },
                 "thumbnail_prompt": { "type": "string" },
-                "duration_s": { "type": "number", "minimum": 0.1 },
+                "duration_ms": { 
+                  "type": "integer", 
+                  "minimum": 100,
+                  "description": "Recommended duration for this shot in milliseconds (e.g., 3000 for 3 seconds)"
+                },
                 "characters": {
                   "type": "array",
                   "items": { "type": "string" },
@@ -195,6 +200,13 @@ const StoryboardGenerator: React.FC = () => {
     );
   };
 
+  const loadSampleData = () => {
+    setStoryboardJson(SAMPLE_STORYBOARD);
+    setShowViewer(true);
+    setError(null);
+    setStreamingContent('');
+  };
+
   const generateStoryboard = async () => {
     if (!userPrompt.trim() || styleFilters.length === 0) {
       setError('Please provide a prompt and at least one style filter');
@@ -226,7 +238,8 @@ ENVIRONMENT REGISTRY RULES:
 VALIDATION:
 - All required fields must be present: version, generated_at, input, styleSettings, characterRegistry, objectRegistry, environmentRegistry, scenes
 - Each scene must have: scene_id, title, description, visual_prompt, shots
-- Each shot must have: shot_id, shot_number, shot_type, description, visual_prompt, thumbnail_prompt
+- Each shot must have: shot_id, shot_number, shot_type, description, visual_prompt, thumbnail_prompt, duration_ms
+- duration_ms must be in MILLISECONDS (e.g., 3000 for 3 seconds, 1500 for 1.5 seconds)
 - IDs must be lowercase with underscores (e.g., "scene_1", "shot_1")`;
 
     const exampleJson = {
@@ -257,7 +270,8 @@ VALIDATION:
           "shot_type": "Wide Shot",
           "description": "Establishing shot",
           "visual_prompt": "Bright, clean wide angle view",
-          "thumbnail_prompt": "Wide angle view of clean space"
+          "thumbnail_prompt": "Wide angle view of clean space",
+          "duration_ms": 3000
         }]
       }]
     };
@@ -432,13 +446,25 @@ IMPORTANT: Output ONLY the JSON object. Start with { and end with }. No other te
             </div>
           </div>
 
-          <button
-            className="generate-button"
-            onClick={generateStoryboard}
-            disabled={isGenerating || !userPrompt.trim() || styleFilters.length === 0}
-          >
-            {isGenerating ? 'Generating...' : 'Generate Storyboard'}
-          </button>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <button
+              className="generate-button"
+              onClick={generateStoryboard}
+              disabled={isGenerating || !userPrompt.trim() || styleFilters.length === 0}
+              style={{ flex: 1 }}
+            >
+              {isGenerating ? 'Generating...' : 'Generate Storyboard'}
+            </button>
+            
+            <button
+              className="dev-button"
+              onClick={loadSampleData}
+              disabled={isGenerating}
+              title="Load sample storyboard for testing (dev only)"
+            >
+              📋 Load Sample
+            </button>
+          </div>
 
           {error && (
             <div className="error-message">
@@ -521,13 +547,7 @@ IMPORTANT: Output ONLY the JSON object. Start with { and end with }. No other te
           />
         ) : (
           <div className="canvas-placeholder">
-            <svg width="160" height="160" viewBox="0 0 160 160" fill="none">
-              <rect x="20" y="30" width="120" height="80" rx="8" stroke="#3a3a3a" strokeWidth="3"/>
-              <rect x="35" y="45" width="35" height="28" rx="4" fill="#2a2a2a"/>
-              <rect x="75" y="45" width="35" height="28" rx="4" fill="#2a2a2a"/>
-              <rect x="115" y="45" width="20" height="28" rx="4" fill="#2a2a2a"/>
-              <rect x="35" y="77" width="90" height="28" rx="4" fill="#2a2a2a"/>
-            </svg>
+<svg width="160" height="160" viewBox="0 0 160 160" fill="none"><rect x="20" y="30" width="120" height="80" rx="8" stroke="#3a3a3a" stroke-width="3"></rect><rect x="30" y="40" width="32" height="28" rx="4" fill="#2a2a2a"></rect><rect x="70" y="40" width="32" height="28" rx="4" fill="#2a2a2a"></rect><rect x="110" y="40" width="20" height="28" rx="4" fill="#2a2a2a"></rect><rect x="30" y="74" width="100" height="28" rx="4" fill="#2a2a2a"></rect></svg>
             <h3>Your storyboard will appear here</h3>
             <p>Configure your inputs in the panel and generate a storyboard</p>
           </div>

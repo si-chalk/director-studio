@@ -1,12 +1,12 @@
 .storyboard-viewer {
   min-height: 100vh;
-  background: #0a0a0a;
-  color: white;
+  background: #F0F1F5;
+  color: rgba(13, 18, 22, 0.86);
 }
 
 .storyboard-viewer-header {
-  background: #1a1a1a;
-  border-bottom: 1px solid #2a2a2a;
+  background: #FFFFFF;
+  border-bottom: 1px solid #e5e7eb;
   padding: 24px 40px;
   position: sticky;
   top: 0;
@@ -32,19 +32,19 @@
 .back-button {
   width: 40px;
   height: 40px;
-  background: #2a2a2a;
-  border: 1px solid #3a3a3a;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
-  color: #e5e7eb;
+  color: rgba(13, 18, 22, 0.86);
 }
 
 .back-button:hover {
-  background: #3a3a3a;
+  background: #e5e7eb;
   border-color: #7c3aed;
   color: #7c3aed;
 }
@@ -53,7 +53,7 @@
   font-size: 20px;
   font-weight: 600;
   margin: 0 0 8px;
-  color: #f3f4f6;
+  color: #0E1318;
 }
 
 .header-meta {
@@ -61,15 +61,15 @@
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  color: #9ca3af;
+  color: rgba(17, 23, 29, 0.60);
 }
 
 .meta-item {
-  color: #9ca3af;
+  color: rgba(17, 23, 29, 0.60);
 }
 
 .meta-separator {
-  color: #4b5563;
+  color: rgba(17, 23, 29, 0.30);
 }
 
 .header-right {
@@ -155,10 +155,6 @@
   margin-bottom: 60px;
 }
 
-.scene-header {
-  margin-bottom: 24px;
-}
-
 .scene-number {
   display: inline-block;
   padding: 3px 12px;
@@ -174,31 +170,30 @@
 .scene-title {
   font-size: 16px;
   font-weight: 700;
-  margin: 0 0 8px;
-  color: #f9fafb;
+  margin: 0 0 12px;
+  color: #0E1318;
 }
 
 .scene-description {
   font-size: 14px;
   line-height: 1.6;
-  color: #d1d5db;
+  color: rgba(13, 18, 22, 0.86);
   margin: 0 0 8px;
   max-width: 800px;
 }
 
 .scene-time-range {
   font-size: 14px;
-  color: #9ca3af;
+  color: rgba(17, 23, 29, 0.60);
   font-weight: 500;
 }
 
 .shots-container {
   display: flex;
-  gap: 20px;
+  gap: 16px;
   overflow-x: auto;
-  padding: 20px 0;
   scrollbar-width: thin;
-  scrollbar-color: #3a3a3a #1a1a1a;
+  scrollbar-color: #d1d5db #f3f4f6;
 }
 
 .shots-container::-webkit-scrollbar {
@@ -206,36 +201,36 @@
 }
 
 .shots-container::-webkit-scrollbar-track {
-  background: #1a1a1a;
+  background: #f3f4f6;
   border-radius: 4px;
 }
 
 .shots-container::-webkit-scrollbar-thumb {
-  background: #3a3a3a;
+  background: #d1d5db;
   border-radius: 4px;
 }
 
 .shots-container::-webkit-scrollbar-thumb:hover {
-  background: #4a4a4a;
+  background: #9ca3af;
 }
 
 .style-settings-panel {
   position: fixed;
   bottom: 24px;
   right: 24px;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: #FFFFFF;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 20px;
   max-width: 300px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .style-settings-panel h4 {
   font-size: 14px;
   font-weight: 600;
   margin: 0 0 16px;
-  color: #f3f4f6;
+  color: #0E1318;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -255,11 +250,11 @@
 
 .setting-label {
   font-weight: 600;
-  color: #9ca3af;
+  color: rgba(17, 23, 29, 0.60);
 }
 
 .setting-value {
-  color: #e5e7eb;
+  color: rgba(13, 18, 22, 0.86);
   text-align: right;
 }
 

@@ -4,16 +4,21 @@
  */
 
 :root {
-  /* Colors */
+  /* Colors - Light Mode */
   --orange-box: #ff4d00;
   --blue-box: #992bff;
   --white: #ffffff;
-  --box-shadow: rgba(0, 0, 0, 0.2);
+  --surface-main: #FFFFFF;
+  --surface-canvas: #F0F1F5;
+  --text-heading: #0E1318;
+  --text-body: rgba(13, 18, 22, 0.86);
+  --text-placeholder: rgba(17, 23, 29, 0.60);
+  --box-shadow: rgba(0, 0, 0, 0.1);
   --toolbar-bg: #ffffff;
   --toolbar-border: rgba(0, 0, 0, 0.1);
   --toolbar-btn-hover: rgba(0, 0, 0, 0.05);
   --toolbar-icon: #424242;
-  --primary-text: rgb(13, 18, 22);
+  --primary-text: rgba(13, 18, 22, 0.86);
   --purple: #8b3dff;
   --hover-select: #8b3dff;
 

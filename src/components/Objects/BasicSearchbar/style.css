@@ -26,7 +26,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: #666;
+  color: rgba(17, 23, 29, 0.60);
 }
 
 .basic-search-input {
@@ -35,17 +35,17 @@
   background: transparent;
   outline: none;
   font-size: 14px;
-  color: #333;
+  color: rgba(13, 18, 22, 0.86);
   line-height: 1.5;
   font-family: inherit;
 }
 
 .basic-search-input::placeholder {
-  color: #999;
+  color: rgba(17, 23, 29, 0.60);
 }
 
 .basic-search-input:disabled {
-  color: #999;
+  color: rgba(17, 23, 29, 0.60);
   cursor: not-allowed;
 }
 
@@ -100,7 +100,7 @@
 }
 
 .basic-search-container.extended .basic-search-input::placeholder {
-  color: #8c8c8c;
+  color: rgba(17, 23, 29, 0.60);
 }
 
 .basic-search-actions {
@@ -121,7 +121,7 @@
   border-radius: 50%;
   border: 1px solid #e8e8e8;
   background-color: #ffffff;
-  color: #333;
+  color: rgba(13, 18, 22, 0.86);
   cursor: pointer;
   transition: all 0.2s ease;
   padding: 0;

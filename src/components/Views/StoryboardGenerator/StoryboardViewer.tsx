@@ -1,82 +1,22 @@
-import React, { useEffect } from 'react';
-import ShotCard from './ShotCard';
+import React, { useState } from 'react';
+import StoryboardView from './StoryboardView';
+import TimelineView from './TimelineView';
+import ViewFooter from './ViewFooter';
 import { useThumbnailGeneration } from './hooks/useThumbnailGeneration';
-import type { ThumbnailRequest, StyleContext } from './services/thumbnailGenerator';
+import type { 
+  ThumbnailRequest, 
+  StyleContext, 
+  StoryboardData as ServiceStoryboardData,
+  Shot as ServiceShot,
+  Scene as ServiceScene
+} from './services/thumbnailGenerator';
 import './StoryboardViewer.css';
 import './StoryboardViewerEmbedded.css';
 
-interface Shot {
-  shot_id: string;
-  shot_number: number;
-  shot_type: string;
-  description: string;
-  visual_prompt: string;
-  thumbnail_prompt: string;
-  duration_s?: number;
-  characters?: string[];
-  objects?: string[];
-  environment_id?: string;
-}
-
-interface Scene {
-  scene_id: string;
-  title: string;
-  description: string;
-  visual_prompt: string;
-  time_range?: {
-    start_s: number;
-    end_s: number;
-  };
-  shots: Shot[];
-}
-
-interface Character {
-  id: string;
-  name: string;
-  description: string;
-  appearance?: string;
-  wardrobe?: string;
-  age_range?: string;
-}
-
-interface ObjectItem {
-  id: string;
-  name: string;
-  description: string;
-  visual_traits?: string;
-}
-
-interface Environment {
-  id: string;
-  name: string;
-  description: string;
-  visual_details?: string;
-  lighting?: string;
-}
-
-interface StyleSettings {
-  camera_type?: string;
-  lighting_style?: string;
-  colour_palette?: string;
-  render_style?: string;
-  aspect_ratio?: string;
-  notes?: string;
-}
-
-interface StoryboardData {
-  version?: string;
-  generated_at?: string;
-  input: {
-    user_prompt: string;
-    style_filter: string[];
-    duration_seconds: number;
-  };
-  styleSettings?: StyleSettings;
-  characterRegistry?: Character[];
-  objectRegistry?: ObjectItem[];
-  environmentRegistry?: Environment[];
-  scenes: Scene[];
-}
+// Use types from service for consistency
+type Shot = ServiceShot;
+type Scene = ServiceScene;
+type StoryboardData = ServiceStoryboardData;
 
 interface StoryboardViewerProps {
   data: StoryboardData;
@@ -84,6 +24,9 @@ interface StoryboardViewerProps {
 }
 
 const StoryboardViewer: React.FC<StoryboardViewerProps> = ({ data, onClose }) => {
+  const [viewMode, setViewMode] = useState<'storyboard' | 'timeline'>('timeline');
+  
+  const thumbnailState = useThumbnailGeneration();
   const {
     thumbnails,
     generating,
@@ -92,17 +35,7 @@ const StoryboardViewer: React.FC<StoryboardViewerProps> = ({ data, onClose }) =>
     generateSingle,
     generateAll,
     isGenerating
-  } = useThumbnailGeneration();
-
-  const getCharacterName = (id: string): string => {
-    const character = data.characterRegistry?.find(c => c.id === id);
-    return character?.name || id;
-  };
-
-  const getObjectName = (id: string): string => {
-    const object = data.objectRegistry?.find(o => o.id === id);
-    return object?.name || id;
-  };
+  } = thumbnailState;
 
   // Get previous shots in context for hierarchical context building
   const getPreviousShotsInContext = (
@@ -255,42 +188,24 @@ const StoryboardViewer: React.FC<StoryboardViewerProps> = ({ data, onClose }) =>
         )}
       </div>
 
-      <div className="storyboard-viewer-content-embedded">
-        {data.scenes.map((scene, sceneIdx) => (
-          <div key={scene.scene_id} className="scene-section">
-            <div className="scene-header">
-              <div className="scene-number">Scene {sceneIdx + 1}</div>
-              <h3 className="scene-title">{scene.title}</h3>
-              <p className="scene-description">{scene.description}</p>
-              {scene.time_range && (
-                <div className="scene-time-range">
-                  {scene.time_range.start_s}s - {scene.time_range.end_s}s
-                </div>
-              )}
-            </div>
-
-            <div className="shots-container">
-              {scene.shots.map((shot, shotIdx) => (
-                <ShotCard
-                  key={shot.shot_id}
-                  shotNumber={shot.shot_number}
-                  shotType={shot.shot_type}
-                  description={shot.description}
-                  thumbnailPrompt={shot.thumbnail_prompt}
-                  visualPrompt={shot.visual_prompt}
-                  characters={shot.characters?.map(getCharacterName)}
-                  objects={shot.objects?.map(getObjectName)}
-                  durationS={shot.duration_s}
-                  thumbnailUrl={thumbnails.get(shot.shot_id) || null}
-                  isGeneratingThumbnail={generating.has(shot.shot_id)}
-                  onGenerateThumbnail={() => handleGenerateSingleThumbnail(shot, scene, sceneIdx, shotIdx)}
-                  error={errors.get(shot.shot_id)}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
+      {/* Conditionally render view based on viewMode */}
+      {viewMode === 'timeline' ? (
+        <TimelineView
+          data={data}
+          thumbnails={thumbnails}
+          generating={generating}
+          errors={errors}
+          onGenerateSingleThumbnail={handleGenerateSingleThumbnail}
+        />
+      ) : (
+        <StoryboardView
+          data={data}
+          thumbnails={thumbnails}
+          generating={generating}
+          errors={errors}
+          onGenerateSingleThumbnail={handleGenerateSingleThumbnail}
+        />
+      )}
 
       {/* Style Settings Panel (Optional) */}
       {data.styleSettings && (
@@ -324,6 +239,9 @@ const StoryboardViewer: React.FC<StoryboardViewerProps> = ({ data, onClose }) =>
           </div>
         </div>
       )}
+
+      {/* View Footer */}
+      <ViewFooter viewMode={viewMode} onViewChange={setViewMode} />
     </div>
   );
 };

@@ -1,14 +1,15 @@
 .shot-card {
   background: white;
   border-radius: 12px;
-  padding: 16px;
+  padding: 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all 0.2s;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  width: 320px;
   flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  /* Width is set dynamically via inline style based on duration */
 }
 
 .shot-card:hover {
@@ -16,23 +17,10 @@
   transform: translateY(-2px);
 }
 
-.shot-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.shot-number {
-  font-size: 14px;
-  font-weight: 600;
-  color: #1a1a1a;
-}
-
 .shot-thumbnail {
   width: 100%;
-  aspect-ratio: 16 / 9;
+  height: 180px;
   background: #f3f4f6;
-  border-radius: 8px;
   overflow: hidden;
   position: relative;
   cursor: pointer;
@@ -41,6 +29,21 @@
 
 .shot-thumbnail:hover {
   transform: scale(1.02);
+}
+
+.shot-number-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 5;
+  background: rgba(255, 255, 255, 0.95);
+  color: rgba(13, 18, 22, 0.86);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
 }
 
 .shot-thumbnail img {
@@ -56,7 +59,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #9ca3af;
+  color: rgba(17, 23, 29, 0.60);
   position: relative;
 }
 
@@ -115,7 +118,7 @@
 
 .error-details {
   font-size: 10px;
-  color: #9ca3af;
+  color: rgba(17, 23, 29, 0.60);
   text-align: center;
   max-width: 200px;
   line-height: 1.4;
@@ -142,7 +145,7 @@
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
-  color: #374151;
+  color: rgba(13, 18, 22, 0.86);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -162,60 +165,215 @@
   height: 16px;
 }
 
-.shot-description {
-  font-size: 14px;
-  line-height: 1.5;
-  color: #4b5563;
-  min-height: 60px;
+/* Edit Button */
+.edit-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  background: white;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  color: rgba(17, 23, 29, 0.60);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  pointer-events: none;
 }
 
-.shot-footer {
+.shot-card:hover .edit-button {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.edit-button:hover {
+  background: #f3f4f6;
+  color: #0E1318;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.edit-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Flyout */
+.flyout-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 9998;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.flyout {
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 400px;
+  max-width: 90vw;
+  background: white;
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Flyout Popover (positioned near button) */
+.flyout-popover {
+  position: fixed;
+  width: 380px;
+  max-width: calc(100vw - 40px);
+  height: auto;
+  max-height: 500px;
+  right: auto;
+  top: auto;
+  bottom: auto;
+  border-radius: 12px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.08);
+  z-index: 9999;
+  animation: popoverIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes popoverIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.flyout-header {
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.flyout-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #0E1318;
+  margin: 0;
+}
+
+.flyout-close {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: rgba(17, 23, 29, 0.60);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.flyout-close:hover {
+  background: #f3f4f6;
+  color: #0E1318;
+}
+
+.flyout-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.flyout-field {
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
-.shot-type-select {
-  flex: 1;
-  padding: 8px 12px;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  font-size: 13px;
-  color: #6b7280;
-  cursor: default;
-}
-
-.shot-duration {
-  font-size: 12px;
-  font-weight: 500;
-  color: #6b7280;
-  padding: 4px 8px;
-  background: #f3f4f6;
-  border-radius: 4px;
-}
-
-.shot-metadata {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-top: 8px;
-  border-top: 1px solid #f3f4f6;
-}
-
-.metadata-tag {
-  display: flex;
-  gap: 6px;
-  font-size: 12px;
-}
-
-.metadata-label {
+.flyout-field label {
+  font-size: 14px;
   font-weight: 600;
-  color: #6b7280;
+  color: #0E1318;
 }
 
-.metadata-value {
-  color: #9ca3af;
+.flyout-info {
+  padding: 10px 12px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  color: rgba(13, 18, 22, 0.86);
+}
+
+.flyout-select {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: rgba(13, 18, 22, 0.86);
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.flyout-select:hover {
+  border-color: #9ca3af;
+}
+
+.flyout-select:focus {
+  outline: none;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.flyout-textarea {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: rgba(13, 18, 22, 0.86);
+  background: white;
+  font-family: inherit;
+  resize: vertical;
+  transition: all 0.2s;
+}
+
+.flyout-textarea:hover {
+  border-color: #9ca3af;
+}
+
+.flyout-textarea:focus {
+  outline: none;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
 }
 

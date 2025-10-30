@@ -2,15 +2,15 @@
 .storyboard-viewer-embedded {
   width: 100%;
   height: 100%;
-  background: #0a0a0a;
-  color: white;
+  background: #F0F1F5;
+  color: rgba(13, 18, 22, 0.86);
   display: flex;
   flex-direction: column;
 }
 
 .storyboard-viewer-header-embedded {
-  background: #1a1a1a;
-  border-bottom: 1px solid #2a2a2a;
+  background: #FFFFFF;
+  border-bottom: 1px solid #e5e7eb;
   padding: 20px 32px;
   flex-shrink: 0;
 }
@@ -20,7 +20,156 @@
   /* gap:64px; */
   flex: 1;
   overflow-y: auto;
-  padding: 32px;
+  overflow-x: hidden;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+}
+
+/* Video Player */
+.video-player-container {
+  /* Takes available flex space */
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.video-player {
+  /* Fill container completely and center content */
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-placeholder {
+  /* Dimensions set by JavaScript to maintain 16:9 aspect ratio */
+  background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 50%, #ddd6fe 100%);
+  
+  /* Visual styling - the frame/chrome */
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Video Controls Container (separate from player) */
+.video-controls-container {
+  width: 100%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 0;
+  background: transparent;
+}
+
+.play-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: rgba(13, 18, 22, 0.86);
+  flex-shrink: 0;
+}
+
+.play-button:hover {
+  background: #f9fafb;
+  border-color: #7c3aed;
+  color: #7c3aed;
+  transform: scale(1.05);
+}
+
+.play-button svg {
+  width: 24px;
+  height: 24px;
+  margin-left: 2px;
+}
+
+.time-container {
+  flex: 1;
+  flex-direction: row;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(13, 18, 22, 0.86);
+  font-variant-numeric: tabular-nums;
+}
+
+.time-separator {
+  color: rgba(13, 18, 22, 0.40);
+}
+
+.time-total {
+  color: rgba(13, 18, 22, 0.60);
+}
+
+/* Shot Timeline Container (scrollable parent) */
+.shots-timeline-container {
+  width: 100%;
+  flex-shrink: 0;
+  margin-top: 8px;
+  overflow-x: auto;
+  padding-bottom: 16px;
+}
+
+/* Custom scrollbar styling */
+.shots-timeline-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.shots-timeline-container::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 4px;
+}
+
+.shots-timeline-container::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.shots-timeline-container::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Horizontal list for shots */
+/* IMPORTANT: Gap value must match SHOT_GAP_PX in timelineConstants.ts */
+.shots-grid {
+  display: flex;
+  gap: 4px; /* = SHOT_GAP_PX */
+  width: fit-content;
+}
+
+/* Cards have dynamic width set by duration, don't shrink */
+.shots-grid > * {
+  flex-shrink: 0;
 }
 
 /* Override specific styles for embedded mode */
@@ -28,11 +177,151 @@
   max-width: none;
 }
 
-.storyboard-viewer-embedded .scene-section {
-  margin-bottom: 50px;
-}
-
 .storyboard-viewer-embedded .style-settings-panel {
   display: none;
+}
+
+/* Footer Styles */
+.storyboard-viewer-footer {
+  width: 100%;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.view-toggle-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(13, 18, 22, 0.86);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-toggle-button:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.view-toggle-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Timeline Scene Indicators */
+/* IMPORTANT: Gap value must match SHOT_GAP_PX in timelineConstants.ts */
+.timeline-scene-indicators {
+  display: flex;
+  gap: 4px; /* = SHOT_GAP_PX */
+  padding: 0 0 12px 0;
+  flex-shrink: 0;
+  width: fit-content;
+}
+
+.scene-indicator {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.scene-indicator-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #7c3aed;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.scene-indicator-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(13, 18, 22, 0.86);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Storyboard View Mode Styles - scoped to embedded viewer */
+.storyboard-view-mode {
+  gap: 0;
+}
+
+.storyboard-view-mode .scene-section {
+  margin-bottom: 48px;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(64, 87, 109, 0.07);
+}
+
+.storyboard-view-mode .scene-section:last-child {
+  margin-bottom: 0;
+}
+
+.storyboard-view-mode .scene-header {
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.storyboard-view-mode .scene-number {
+  font-size: 12px;
+  font-weight: 700;
+  color: #7c3aed;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.storyboard-view-mode .scene-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0E1318;
+  margin: 0 0 8px 0;
+}
+
+.storyboard-view-mode .scene-description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(13, 18, 22, 0.70);
+  margin: 0;
+}
+
+.storyboard-view-mode .scene-time-range {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(13, 18, 22, 0.50);
+  margin-top: 8px;
+}
+
+.storyboard-view-mode .shots-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  margin-top: 16px;
 }
 
